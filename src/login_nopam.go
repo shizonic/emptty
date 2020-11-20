@@ -1,18 +1,10 @@
 package main
 
-// #include <shadow.h>
-// #include <crypt.h>
-// #include <string.h>
-// #include <stdlib.h>
-// #cgo linux LDFLAGS: -lcrypt
-import "C"
-
 import (
 	"bufio"
 	"fmt"
 	"os"
 	"os/user"
-	"unsafe"
 )
 
 // Handle authentication of user without PAM.
@@ -51,25 +43,6 @@ func authUser(conf *config) *sysuser {
 	}
 	handleStrErr("Authentication failure")
 	return nil
-}
-
-// Tries to authorize user with password.
-func authPassword(username string, password string) bool {
-	usr := C.CString(username)
-	defer C.free(unsafe.Pointer(usr))
-
-	passwd := C.CString(password)
-	defer C.free(unsafe.Pointer(passwd))
-
-	pwd := C.getspnam(usr)
-	if pwd == nil {
-		return false
-	}
-	crypted := C.crypt(passwd, pwd.sp_pwdp)
-	if C.strcmp(crypted, pwd.sp_pwdp) != 0 {
-		return false
-	}
-	return true
 }
 
 // Handles close of authentication
